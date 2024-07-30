@@ -1,17 +1,22 @@
 const path = require('node:path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const ESLintPlugin = require('eslint-webpack-plugin');
 
 const isProduction = process.env.NODE_ENV === 'production';
 const styleLoader = isProduction ? MiniCssExtractPlugin.loader : 'style-loader';
 
 module.exports = {
-  entry: path.resolve(__dirname, 'src', 'index.js'),
+  entry: path.resolve(__dirname, 'src', 'index.ts'),
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js',
     clean: true,
   },
+  resolve: {
+    extensions: ['.js', '.ts', '.tsx'],
+  },
+  devtool: isProduction ? 'source-map' : 'inline-source-map',
   devServer: {
     static: {
       directory: path.resolve(__dirname, 'dist'),
@@ -59,6 +64,7 @@ module.exports = {
           },
         },
       },
+      { test: /\.([cm]?ts|tsx)$/, loader: 'ts-loader' },
     ],
   },
   plugins: [
@@ -67,5 +73,8 @@ module.exports = {
       filename: 'index.html',
     }),
     new MiniCssExtractPlugin(),
+    new ESLintPlugin({
+      extensions: ['js', 'ts', 'tsx'],
+    }),
   ],
 };

@@ -4,9 +4,14 @@ module.exports = {
     browser: true,
     es2022: true,
   },
-  extends: ['eslint:recommended', 'plugin:unicorn/recommended', 'prettier'],
+  extends: [
+    'eslint:recommended',
+    'plugin:unicorn/recommended',
+    'plugin:@typescript-eslint/recommended',
+    'prettier',
+  ],
   overrides: [],
-  parser: 'espree',
+  parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module',
@@ -21,7 +26,7 @@ module.exports = {
   //     presets: ["@babel/preset-env"],
   //   },
   // },
-  plugins: ['unicorn', 'prettier'],
+  plugins: ['unicorn', '@typescript-eslint', 'prettier'],
   rules: {
     // 'indent': [ 'error', 2 ], // conflict with prettier
     // 'linebreak-style': [ 'error', 'unix' ], // conflict with prettier
