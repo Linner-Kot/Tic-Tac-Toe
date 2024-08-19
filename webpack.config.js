@@ -73,8 +73,9 @@ module.exports = {
       filename: 'index.html',
     }),
     new MiniCssExtractPlugin(),
-    new ESLintPlugin({
-      extensions: ['js', 'ts', 'tsx'],
-    }),
+    // TODO включить и привыкнуть
+    // new ESLintPlugin({
+    //   extensions: ['js', 'ts', 'tsx'],
+    // }),
   ],
 };

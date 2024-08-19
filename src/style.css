@@ -1,5 +1,11 @@
-body {
+.board-container {
   background-color: rgb(34, 34, 34);
-  width: 100%;
-  height: 100%;
+  width: 800px;
+  height: 800px;
+}
+
+.cell {
+  width: 10%;
+  height: 10%;
+  border: 5px solid slategray;
 }
