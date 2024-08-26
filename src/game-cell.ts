@@ -3,11 +3,3 @@ export enum CellStatus {
   O = 'O',
   EMPTY = '',
 }
-
-export class GameCell {
-  status: CellStatus;
-
-  constructor() {
-    this.status = CellStatus.EMPTY;
-  }
-}

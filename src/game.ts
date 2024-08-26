@@ -1,125 +1,158 @@
 import { DomService } from './dom.service';
 import { CellStatus } from './game-cell';
-import { Settings } from './settings';
+import { Modal } from './modal';
+import { MAX_BOARD_SIZE, MIN_BOARD_SIZE } from './settings';
 
 export class Game {
-  private board: CellStatus[][] = [];
+  private boardStatus: CellStatus[][] = [];
   private currentPlayer: CellStatus = CellStatus.EMPTY;
-  private size: number;
+  private boardSize: number;
 
-  constructor(private domService = new DomService()) {
-    this.size = this.getSizeFromLocalStorage();
+  private readonly boardElement = DomService.boardContainer;
+  private readonly resetButtonElement = DomService.resetButton;
+  private readonly sizeInputElement = DomService.sizeInput;
+  private readonly decreaseButtonElement = DomService.decreaseButton;
+  private readonly increaseButtonElement = DomService.increaseButton;
+
+  constructor(private modal = new Modal()) {
+    this.boardSize = this.getSizeFromLocalStorage();
     this.initInputField();
     this.initResetButton();
-    this.initModal();
-    this.initGame();
+    this.fillBoardTemplate();
+    this.updateStatisticsDisplay(this.getGameStatistics()); // TODO Отображаем статистику при загрузке
+    this.reset();
   }
 
-  private initGame(): void {
-    this.reset();
-    this.fillBoardTemplate();
+  /** Инициализация поля ввода и установка обработчика событий */
+  private initInputField(): void {
+    if (this.sizeInputElement) {
+      this.sizeInputElement.value = this.boardSize.toString();
+      this.decreaseButtonElement.addEventListener('click', () => {
+        if (this.boardSize > MIN_BOARD_SIZE) {
+          this.boardSize--;
+          this.sizeInputElement.value = this.boardSize.toString();
+          this.updateSize(this.sizeInputElement.value);
+        }
+        this.toggleButtonStates();
+      });
+      this.increaseButtonElement.addEventListener('click', () => {
+        if (this.boardSize < MAX_BOARD_SIZE) {
+          this.boardSize++;
+          this.sizeInputElement.value = this.boardSize.toString();
+          this.updateSize(this.sizeInputElement.value);
+        }
+        this.toggleButtonStates();
+      });
+      this.toggleButtonStates();
+    }
+  }
+
+  private initResetButton(): void {
+    this.resetButtonElement.addEventListener('click', () => this.reset());
   }
 
   /** Сбрасывает текущего игрока и обнуляет игровую доску */
   public reset(): void {
     this.currentPlayer = CellStatus.X;
-    this.board = Array.from({ length: this.size }, () =>
-      Array.from({ length: this.size }, () => CellStatus.EMPTY),
+    this.boardStatus = Array.from({ length: this.boardSize }, () =>
+      Array.from({ length: this.boardSize }, () => CellStatus.EMPTY),
     );
-    const boardTemplate = this.domService.getElement(
-      Settings.SELECTOR_BOARD_CONTAINER,
-    );
-    if (boardTemplate) {
-      const cells = this.domService.getAllElements('.cell');
+    if (this.boardElement) {
+      const cells = DomService.getAllCells();
       for (const cell of cells) {
         cell.textContent = '';
       }
     }
+    this.boardElement.removeEventListener('mousedown', this.cellClickHandler);
+    this.boardElement.addEventListener('mousedown', this.cellClickHandler);
   }
 
-  /** Настройка кнопки сброса */
-  private initResetButton(): void {
-    const resetButton = document.querySelector(
-      Settings.SELECTOR_RESET_BUTTON,
-    ) as HTMLElement;
-    resetButton.addEventListener('click', () => this.reset());
-  }
-
-  /** Инициализация поля ввода и установка обработчика событий */
-  private initInputField(): void {
-    const sizeInput = document.querySelector('.size-input') as HTMLInputElement;
-    const decreaseButton = document.querySelector(
-      '#decrease',
-    ) as HTMLButtonElement;
-    const increaseButton = document.querySelector(
-      '#increase',
-    ) as HTMLButtonElement;
-
-    if (sizeInput) {
-      sizeInput.value = this.size.toString();
-
-      decreaseButton.addEventListener('click', () => {
-        if (this.size > 2) {
-          this.size--;
-          sizeInput.value = this.size.toString();
-          this.updateSize(sizeInput.value);
+  /** Заполняет контейнер доски ячейками */
+  private fillBoardTemplate(): void {
+    if (this.boardElement) {
+      this.boardElement.innerHTML = '';
+      this.boardElement.style.gridTemplateRows = `repeat(${this.boardSize}, 1fr)`;
+      this.boardElement.style.gridTemplateColumns = `repeat(${this.boardSize}, 1fr)`;
+      const fragment = document.createDocumentFragment();
+      for (let row = 0; row < this.boardSize; row++) {
+        for (let col = 0; col < this.boardSize; col++) {
+          fragment.append(this.createCellTemplate(row, col));
         }
-        this.toggleButtonStates(decreaseButton, increaseButton);
-      });
-
-      increaseButton.addEventListener('click', () => {
-        if (this.size < 9) {
-          this.size++;
-          sizeInput.value = this.size.toString();
-          this.updateSize(sizeInput.value);
-        }
-        this.toggleButtonStates(decreaseButton, increaseButton);
-      });
-
-      this.toggleButtonStates(decreaseButton, increaseButton); // Изначальная проверка
+      }
+      this.boardElement.append(fragment);
     }
   }
 
-  private toggleButtonStates(
-    decreaseButton: HTMLButtonElement,
-    increaseButton: HTMLButtonElement,
-  ): void {
-    decreaseButton.disabled = this.size <= 2;
-    increaseButton.disabled = this.size >= 9;
+  /** Создание HTML-разметки для одной ячейки */
+  private createCellTemplate(row: number, col: number): HTMLElement {
+    const cellTemplate = document.createElement('div');
+    cellTemplate.classList.add('cell');
+    if (row < this.boardSize - 1) {
+      cellTemplate.classList.add('cell_border-bottom');
+    }
+    if (col < this.boardSize - 1) {
+      cellTemplate.classList.add('cell_border-right');
+    }
+    cellTemplate.dataset.x = row.toString();
+    cellTemplate.dataset.y = col.toString();
+    return cellTemplate;
+  }
+
+  private toggleButtonStates(): void {
+    this.decreaseButtonElement.disabled = this.boardSize <= MIN_BOARD_SIZE;
+    this.increaseButtonElement.disabled = this.boardSize >= MAX_BOARD_SIZE;
   }
 
   /** Обновление значения размера и сохранение в LocalStorage */
   private updateSize(newSize: string): void {
     const parsedSize = Number.parseInt(newSize, 10);
-    if (!Number.isNaN(parsedSize) && parsedSize >= 2 && parsedSize <= 9) {
-      this.size = parsedSize;
-      localStorage.setItem('boardSize', this.size.toString());
-      this.initGame();
+    if (
+      !Number.isNaN(parsedSize) &&
+      parsedSize >= MIN_BOARD_SIZE &&
+      parsedSize <= MAX_BOARD_SIZE
+    ) {
+      this.boardSize = parsedSize;
+      localStorage.setItem('boardSize', this.boardSize.toString());
+      this.fillBoardTemplate();
+      this.reset();
     }
   }
 
   public makeMove(row: number, column: number, target: HTMLElement): boolean {
-    console.info(this.board);
-    if (row < 0 || row >= this.size || column < 0 || column >= this.size) {
-      console.log('{Ход выходит за пределы доски}');
-      // throw new Error('Ход выходит за пределы доски')
+    if (
+      row < 0 ||
+      row >= this.boardSize ||
+      column < 0 ||
+      column >= this.boardSize
+    ) {
+      console.error('{Ход выходит за пределы доски}');
       return false;
     }
-    if (this.board[row][column] !== CellStatus.EMPTY) {
-      console.log('Ячейка уже занята');
-      this.showModal('Эта ячейка уже занята');
-      // throw new Error('Ячейка уже занята')
+    if (this.boardStatus[row][column] !== CellStatus.EMPTY) {
+      this.modal.showModal('Эта ячейка уже занята');
       return false;
     }
+
     target.textContent = this.currentPlayer;
-    this.board[row][column] = this.currentPlayer;
+    target.classList.add(this.currentPlayer);
+    this.boardStatus[row][column] = this.currentPlayer;
     if (this.checkWinner()) {
-      console.log(`Игрок ${this.currentPlayer} победил!`);
-      this.showModal(`Игрок ${this.currentPlayer} победил!`, true);
+      this.boardElement.removeEventListener('mousedown', this.cellClickHandler);
+      this.saveGameResult(`Победил игрок ${this.currentPlayer}`); // TODO
+      this.modal.showModal(
+        `Игрок ${this.currentPlayer} победил!`,
+        true,
+        this.reset.bind(this),
+      );
       return true;
     }
-    this.currentPlayer =
-      this.currentPlayer === CellStatus.X ? CellStatus.O : CellStatus.X;
+    if (this.checkDraw()) {
+      this.boardElement.removeEventListener('mousedown', this.cellClickHandler);
+      this.saveGameResult('Ничья'); // TODO
+      this.modal.showModal('Ничья', true, this.reset.bind(this));
+      return true;
+    }
+    this.togglePlayer();
     return false;
   }
 
@@ -132,13 +165,17 @@ export class Game {
     );
   }
 
+  private checkDraw(): boolean {
+    return this.boardStatus.flat().every((cell) => cell !== CellStatus.EMPTY);
+  }
+
   private checkLine(line: CellStatus[]): boolean {
     return line.every((cell) => cell !== CellStatus.EMPTY && cell === line[0]);
   }
 
   private checkHorizontal(): boolean {
-    for (let index = 0; index < this.size; index++) {
-      if (this.checkLine(this.board[index])) {
+    for (let index = 0; index < this.boardSize; index++) {
+      if (this.checkLine(this.boardStatus[index])) {
         return true;
       }
     }
@@ -146,8 +183,8 @@ export class Game {
   }
 
   private checkVertical(): boolean {
-    for (let index = 0; index < this.size; index++) {
-      const columns = this.board.map((row) => row[index]);
+    for (let index = 0; index < this.boardSize; index++) {
+      const columns = this.boardStatus.map((row) => row[index]);
       if (this.checkLine(columns)) {
         return true;
       }
@@ -157,106 +194,75 @@ export class Game {
 
   private checkMainDiagonal(): boolean {
     const mainDiagonal: CellStatus[] = [];
-    for (let index = 0; index < this.size; index++) {
-      mainDiagonal.push(this.board[index][index]);
+    for (let index = 0; index < this.boardSize; index++) {
+      mainDiagonal.push(this.boardStatus[index][index]);
     }
     return this.checkLine(mainDiagonal);
   }
 
   private checkSecondDiagonal(): boolean {
     const secondDiagonal: CellStatus[] = [];
-    for (let index = 0; index < this.size; index++) {
-      secondDiagonal.push(this.board[index][this.size - index - 1]);
+    for (let index = 0; index < this.boardSize; index++) {
+      secondDiagonal.push(this.boardStatus[index][this.boardSize - index - 1]);
     }
     return this.checkLine(secondDiagonal);
   }
 
-  /** Заполняет контейнер доски ячейками */
-  private fillBoardTemplate(): void {
-    const boardTemplate = this.domService.getElement(
-      Settings.SELECTOR_BOARD_CONTAINER,
-    );
-
-    if (boardTemplate) {
-      boardTemplate.innerHTML = '';
-      const fragment = document.createDocumentFragment();
-      boardTemplate.style.display = 'grid';
-      boardTemplate.style.gridTemplateRows = `repeat(${this.size}, 1fr)`;
-      boardTemplate.style.gridTemplateColumns = `repeat(${this.size}, 1fr)`;
-      for (let row = 0; row < this.size; row++) {
-        for (let col = 0; col < this.size; col++) {
-          fragment.append(this.createCellTemplate(row, col));
-        }
-      }
-      boardTemplate.append(fragment);
-      boardTemplate.addEventListener('click', (event) => {
-        event.preventDefault();
-        const target = event.target as HTMLElement;
-        const row = +target.dataset.x!;
-        const column = +target.dataset.y!;
-        this.makeMove(row, column, target);
-      });
-    }
+  private togglePlayer(): void {
+    this.currentPlayer =
+      this.currentPlayer === CellStatus.X ? CellStatus.O : CellStatus.X;
   }
 
-  /** Создание HTML-разметки для одной ячейки */
-  private createCellTemplate(row: number, col: number): HTMLElement {
-    const cellTemplate = document.createElement('div');
-    cellTemplate.classList.add('cell');
-    if (row < this.size - 1) {
-      cellTemplate.style.borderBottom = '2px solid #ccc';
-    }
-    if (col < this.size - 1) {
-      cellTemplate.style.borderRight = '2px solid #ccc';
-    }
-    cellTemplate.dataset.x = row.toString();
-    cellTemplate.dataset.y = col.toString();
-    return cellTemplate;
-  }
+  private cellClickHandler = (event: Event): void => {
+    event.preventDefault();
+    const target = event.target as HTMLElement;
+    const row = +target.dataset.x!;
+    const col = +target.dataset.y!;
+    this.makeMove(row, col, target);
+  };
 
-  /** Получение размера доски из localStorage */
   private getSizeFromLocalStorage(): number {
     const storedSize = localStorage.getItem('boardSize');
-    return storedSize ? Number.parseInt(storedSize, 10) : 3;
+    return storedSize ? Number.parseInt(storedSize, 10) : MIN_BOARD_SIZE;
   }
 
-  /** Инициализация модального окна */
-  private initModal(): void {
-    const modal = this.domService.getElement('#modal');
-    const closeModal = this.domService.getElement('.modal-close');
-    const modalButton = this.domService.getElement('#modal-button');
+  /** Обновление значения размера и сохранение в LocalStorage */
+  // private updateSize(newSize: string): void {
+  //   const parsedSize = Number.parseInt(newSize, 10);
+  //   if (
+  //     !Number.isNaN(parsedSize) &&
+  //     parsedSize >= MIN_BOARD_SIZE &&
+  //     parsedSize <= MAX_BOARD_SIZE
+  //   ) {
+  //     this.boardSize = parsedSize;
+  //     localStorage.setItem('boardSize', this.boardSize.toString());
+  //     this.fillBoardTemplate();
+  //     this.reset();
+  //   }
+  // }
 
-    closeModal.addEventListener('click', () => {
-      modal!.style.display = 'none';
-    });
-
-    modalButton!.addEventListener('click', () => {
-      modal!.style.display = 'none';
-    });
-
-    window.addEventListener('click', (event) => {
-      if (event.target === modal) {
-        modal!.style.display = 'none';
-      }
-    });
-  }
-
-  //** Показ модального окна */
-  private showModal(message: string, endGame?: boolean): void {
-    const modal = this.domService.getElement('#modal');
-    const modalMessage = this.domService.getElement('#modal-message');
-    const modalButton = this.domService.getElement('#modal-button');
-
-    modalMessage.textContent = message;
-    if (endGame) {
-      modalButton.textContent = 'Новая игра';
-      modalButton.addEventListener('click', () => {
-        this.reset();
-      });
-      // TODO block click on board
-    } else {
-      modalButton.textContent = 'OK';
+  private saveGameResult(result: string): void {
+    const statsKey = 'gameStatistics';
+    const gameStatistics = JSON.parse(localStorage.getItem(statsKey) || '[]');
+    if (gameStatistics.length >= 10) {
+      gameStatistics.shift();
     }
-    modal!.style.display = 'block';
+
+    gameStatistics.push(result);
+    localStorage.setItem(statsKey, JSON.stringify(gameStatistics));
+    this.updateStatisticsDisplay(gameStatistics);
+  }
+
+  private getGameStatistics(): string[] {
+    return JSON.parse(localStorage.getItem('gameStatistics') || '[]');
+  }
+
+  private updateStatisticsDisplay(statistics: string[]): void {
+    const statisticsElement = document.querySelector('.statistics');
+    if (statisticsElement) {
+      statisticsElement.innerHTML = statistics
+        .map((result, index) => `${index + 1}: ${result}`)
+        .join('<br>');
+    }
   }
 }

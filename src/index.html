@@ -5,36 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tic Tac Toe</title>
     <link rel="stylesheet" href="style.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
   </head>
   <body>
-    <div class="game-wrapper">
-      <div class="board-container" onclick=""></div>
-      <div class="buttons-container">
-        <button class="reset-button">Новая игра</button>
-        <!-- <div class="size-container"> -->
-        <!-- <span class="size-label">Размер поля:</span> -->
-        <!-- <input class="size-input" type="number" min="2" max="9"></input> -->
-        <!-- </div> -->
-
-        <div class="size-control">
-          <label for="size-input" class="size-label">Размер поля</label>
-          <div class="size-wrapper">
-            <button class="size-button" id="decrease">-</button>
-            <input type="text" class="size-input" id="size-input" value="3" readonly />
-            <button class="size-button" id="increase">+</button>
+    <div class="glow-wrapper">
+      <div class="game-wrapper">
+        <div class="board-container"></div>
+        <div class="settings-container">
+          <button class="reset-button">Новая игра</button>
+          <div class="size-control">
+            <label for="size-input" class="size-label">Размер поля</label>
+            <div class="size-wrapper">
+              <button class="size-button decrease"><div>-</div></button>
+              <input type="text" class="size-input" value="3" readonly />
+              <button class="size-button increase">+</button>
+            </div>
           </div>
         </div>
-
+        <div class="statistics-container">
+          <p class="statistics-label">Статистика</p>
+          <div class="statistics"></div>
+        </div>
       </div>
     </div>
   </body>
 
-  <div id="modal" class="modal">
+  <div class="modal">
     <div class="modal-content">
       <span class="modal-close">&times;</span>
-      <p id="modal-message">Сообщение</p>
-      <button id="modal-button">ОК</button>
+      <p class="modal-message">Сообщение</p>
+      <button class="modal-button">ОК</button>
     </div>
   </div>
-  <!-- TODO история игр, статистика -->
 </html>
