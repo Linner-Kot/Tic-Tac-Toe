@@ -1,17 +1,16 @@
 export class Settings {
-  constructor() {}
+  public static readonly SELECTOR_BOARD_CONTAINER = '.board-container';
+  public static readonly SELECTOR_CELL = '.cell';
+  public static readonly SELECTOR_RESET_BUTTON = '.reset-button';
+  public static readonly SELECTOR_SIZE_INPUT = '.size-input';
+  public static readonly SELECTOR_DECREASE_BUTTON = '.decrease';
+  public static readonly SELECTOR_INCREASE_BUTTON = '.increase';
+  public static readonly SELECTOR_MODAL = '.modal';
+  public static readonly SELECTOR_MODAL_CLOSE_BUTTON = '.modal-close';
+  public static readonly SELECTOR_MODAL_BUTTON = '.modal-button';
+  public static readonly SELECTOR_MODAL_MESSAGE = '.modal-message';
+  public static readonly SELECTOR_STATISTICS = '.statistics';
 
-  public static SELECTOR_BOARD_CONTAINER = '.board-container';
-  public static SELECTOR_CELL = '.cell';
-  public static SELECTOR_RESET_BUTTON = '.reset-button';
-  public static SELECTOR_SIZE_INPUT = '.size-input';
-  public static SELECTOR_DECREASE_BUTTON = '.decrease';
-  public static SELECTOR_INCREASE_BUTTON = '.increase';
-  public static SELECTOR_MODAL = '.modal';
-  public static SELECTOR_MODAL_CLOSE_BUTTON = '.modal-close';
-  public static SELECTOR_MODAL_BUTTON = '.modal-button';
-  public static SELECTOR_MODAL_MESSAGE = '.modal-message';
+  public static readonly MIN_BOARD_SIZE = 3;
+  public static readonly MAX_BOARD_SIZE = 9;
 }
-
-export const MIN_BOARD_SIZE = 3;
-export const MAX_BOARD_SIZE = 9;

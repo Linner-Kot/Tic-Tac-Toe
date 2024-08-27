@@ -27,14 +27,13 @@ module.exports = {
     hot: true,
     compress: true,
     historyApiFallback: true,
-    // onListening: function (devServer) {
-    //   if (isProduction) {
-    //     throw new Error("webpack-dev-server is not allowed in production mode");
-    //   }
-
-    //   const port = devServer.server.address().port;
-    //   console.log(`Listening on port ${port}`);
-    // },
+    onListening: function (devServer) {
+      if (isProduction) {
+        throw new Error("webpack-dev-server is not allowed in production mode");
+      }
+      const port = devServer.server.address().port;
+      console.log(`Listening on port ${port}`);
+    },
   },
   module: {
     rules: [

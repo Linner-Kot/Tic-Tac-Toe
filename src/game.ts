@@ -1,7 +1,7 @@
+import { Settings } from './settings';
 import { DomService } from './dom.service';
 import { CellStatus } from './game-cell';
 import { Modal } from './modal';
-import { MAX_BOARD_SIZE, MIN_BOARD_SIZE } from './settings';
 
 export class Game {
   private boardStatus: CellStatus[][] = [];
@@ -19,7 +19,7 @@ export class Game {
     this.initInputField();
     this.initResetButton();
     this.fillBoardTemplate();
-    this.updateStatisticsDisplay(this.getGameStatistics()); // TODO Отображаем статистику при загрузке
+    this.updateStatisticsDisplay(this.getGameStatistics());
     this.reset();
   }
 
@@ -28,7 +28,7 @@ export class Game {
     if (this.sizeInputElement) {
       this.sizeInputElement.value = this.boardSize.toString();
       this.decreaseButtonElement.addEventListener('click', () => {
-        if (this.boardSize > MIN_BOARD_SIZE) {
+        if (this.boardSize > Settings.MIN_BOARD_SIZE) {
           this.boardSize--;
           this.sizeInputElement.value = this.boardSize.toString();
           this.updateSize(this.sizeInputElement.value);
@@ -36,7 +36,7 @@ export class Game {
         this.toggleButtonStates();
       });
       this.increaseButtonElement.addEventListener('click', () => {
-        if (this.boardSize < MAX_BOARD_SIZE) {
+        if (this.boardSize < Settings.MAX_BOARD_SIZE) {
           this.boardSize++;
           this.sizeInputElement.value = this.boardSize.toString();
           this.updateSize(this.sizeInputElement.value);
@@ -99,8 +99,10 @@ export class Game {
   }
 
   private toggleButtonStates(): void {
-    this.decreaseButtonElement.disabled = this.boardSize <= MIN_BOARD_SIZE;
-    this.increaseButtonElement.disabled = this.boardSize >= MAX_BOARD_SIZE;
+    this.decreaseButtonElement.disabled =
+      this.boardSize <= Settings.MIN_BOARD_SIZE;
+    this.increaseButtonElement.disabled =
+      this.boardSize >= Settings.MAX_BOARD_SIZE;
   }
 
   /** Обновление значения размера и сохранение в LocalStorage */
@@ -108,8 +110,8 @@ export class Game {
     const parsedSize = Number.parseInt(newSize, 10);
     if (
       !Number.isNaN(parsedSize) &&
-      parsedSize >= MIN_BOARD_SIZE &&
-      parsedSize <= MAX_BOARD_SIZE
+      parsedSize >= Settings.MIN_BOARD_SIZE &&
+      parsedSize <= Settings.MAX_BOARD_SIZE
     ) {
       this.boardSize = parsedSize;
       localStorage.setItem('boardSize', this.boardSize.toString());
@@ -138,7 +140,7 @@ export class Game {
     this.boardStatus[row][column] = this.currentPlayer;
     if (this.checkWinner()) {
       this.boardElement.removeEventListener('mousedown', this.cellClickHandler);
-      this.saveGameResult(`Победил игрок ${this.currentPlayer}`); // TODO
+      this.saveGameResult(this.currentPlayer);
       this.modal.showModal(
         `Игрок ${this.currentPlayer} победил!`,
         true,
@@ -148,7 +150,7 @@ export class Game {
     }
     if (this.checkDraw()) {
       this.boardElement.removeEventListener('mousedown', this.cellClickHandler);
-      this.saveGameResult('Ничья'); // TODO
+      this.saveGameResult('draw');
       this.modal.showModal('Ничья', true, this.reset.bind(this));
       return true;
     }
@@ -223,45 +225,51 @@ export class Game {
 
   private getSizeFromLocalStorage(): number {
     const storedSize = localStorage.getItem('boardSize');
-    return storedSize ? Number.parseInt(storedSize, 10) : MIN_BOARD_SIZE;
+    return storedSize
+      ? Number.parseInt(storedSize, 10)
+      : Settings.MIN_BOARD_SIZE;
   }
-
-  /** Обновление значения размера и сохранение в LocalStorage */
-  // private updateSize(newSize: string): void {
-  //   const parsedSize = Number.parseInt(newSize, 10);
-  //   if (
-  //     !Number.isNaN(parsedSize) &&
-  //     parsedSize >= MIN_BOARD_SIZE &&
-  //     parsedSize <= MAX_BOARD_SIZE
-  //   ) {
-  //     this.boardSize = parsedSize;
-  //     localStorage.setItem('boardSize', this.boardSize.toString());
-  //     this.fillBoardTemplate();
-  //     this.reset();
-  //   }
-  // }
 
   private saveGameResult(result: string): void {
     const statsKey = 'gameStatistics';
-    const gameStatistics = JSON.parse(localStorage.getItem(statsKey) || '[]');
+    let gameStatistics: string[] = [];
+
+    try {
+      gameStatistics = JSON.parse(localStorage.getItem(statsKey) || '[]');
+    } catch (error) {
+      console.error('Ошибка при парсинге JSON из localStorage:', error);
+      gameStatistics = [];
+    }
+
     if (gameStatistics.length >= 10) {
       gameStatistics.shift();
     }
 
-    gameStatistics.push(result);
+    if (Array.isArray(gameStatistics)) {
+      gameStatistics.push(result);
+    }
     localStorage.setItem(statsKey, JSON.stringify(gameStatistics));
     this.updateStatisticsDisplay(gameStatistics);
   }
 
   private getGameStatistics(): string[] {
-    return JSON.parse(localStorage.getItem('gameStatistics') || '[]');
+    try {
+      return JSON.parse(localStorage.getItem('gameStatistics') || '[]');
+    } catch (error) {
+      console.error('Ошибка при парсинге JSON из localStorage:', error);
+      return [];
+    }
   }
 
   private updateStatisticsDisplay(statistics: string[]): void {
-    const statisticsElement = document.querySelector('.statistics');
-    if (statisticsElement) {
+    const statisticsElement = DomService.statistics;
+    if (statisticsElement && Array.isArray(statistics)) {
       statisticsElement.innerHTML = statistics
-        .map((result, index) => `${index + 1}: ${result}`)
+        .map((result, index) => {
+          const resultText =
+            result === 'draw' ? 'Ничья' : `Игрок ${result} победил`;
+          return `${index + 1}. ${resultText}`;
+        })
         .join('<br>');
     }
   }

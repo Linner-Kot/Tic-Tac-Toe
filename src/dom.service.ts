@@ -1,37 +1,43 @@
 import { Settings } from './settings';
 
 export class DomService {
-  constructor() {}
   private static getElement(selector: string): HTMLElement {
-    return document.querySelector(selector) as HTMLElement;
+    const element = document.querySelector(selector);
+    if (element === null) {
+      throw new Error(`Element ${selector} is missing from DOM`);
+    }
+    return element as HTMLElement;
   }
 
   static getAllElements(selector: string): NodeListOf<HTMLElement> {
-    return document.querySelectorAll(selector) as NodeListOf<HTMLElement>;
+    const element = document.querySelectorAll(selector);
+    if (element === null) {
+      throw new Error(`Element ${selector} is missing from DOM`);
+    }
+    return element as NodeListOf<HTMLElement>;
   }
 
   public static boardContainer = this.getElement(
     Settings.SELECTOR_BOARD_CONTAINER,
   );
 
-  public static resetButton = document.querySelector(
+  public static resetButton = this.getElement(
     Settings.SELECTOR_RESET_BUTTON,
   ) as HTMLButtonElement;
 
-  public static sizeInput = document.querySelector(
+  public static sizeInput = this.getElement(
     Settings.SELECTOR_SIZE_INPUT,
   ) as HTMLInputElement;
 
-  public static decreaseButton = document.querySelector(
+  public static decreaseButton = this.getElement(
     Settings.SELECTOR_DECREASE_BUTTON,
   ) as HTMLButtonElement;
 
-  public static increaseButton = document.querySelector(
+  public static increaseButton = this.getElement(
     Settings.SELECTOR_INCREASE_BUTTON,
   ) as HTMLButtonElement;
 
-  public static getAllCells = () =>
-    document.querySelectorAll(Settings.SELECTOR_CELL);
+  public static getAllCells = () => this.getAllElements(Settings.SELECTOR_CELL);
 
   public static modal = this.getElement(Settings.SELECTOR_MODAL);
 
@@ -42,4 +48,6 @@ export class DomService {
   public static modalButton = this.getElement(Settings.SELECTOR_MODAL_BUTTON);
 
   public static modalMessage = this.getElement(Settings.SELECTOR_MODAL_MESSAGE);
+
+  public static statistics = this.getElement(Settings.SELECTOR_STATISTICS);
 }
