@@ -50,4 +50,8 @@ export class DomService {
   public static modalMessage = this.getElement(Settings.SELECTOR_MODAL_MESSAGE);
 
   public static statistics = this.getElement(Settings.SELECTOR_STATISTICS);
+
+  public static clearStatisticsBtn = this.getElement(
+    Settings.SELECTOR_CLEAR_STATISTICS_BTN,
+  ) as HTMLButtonElement;
 }

@@ -10,6 +10,8 @@ export class Settings {
   public static readonly SELECTOR_MODAL_BUTTON = '.modal-button';
   public static readonly SELECTOR_MODAL_MESSAGE = '.modal-message';
   public static readonly SELECTOR_STATISTICS = '.statistics';
+  public static readonly SELECTOR_CLEAR_STATISTICS_BTN =
+    '.clear-statistics-button';
 
   public static readonly MIN_BOARD_SIZE = 3;
   public static readonly MAX_BOARD_SIZE = 9;

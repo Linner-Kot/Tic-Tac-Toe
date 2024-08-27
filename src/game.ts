@@ -4,7 +4,7 @@ import { CellStatus } from './game-cell';
 import { Modal } from './modal';
 
 export class Game {
-  private boardStatus: CellStatus[][] = [];
+  private board: CellStatus[][] = [];
   private currentPlayer: CellStatus = CellStatus.EMPTY;
   private boardSize: number;
 
@@ -13,11 +13,13 @@ export class Game {
   private readonly sizeInputElement = DomService.sizeInput;
   private readonly decreaseButtonElement = DomService.decreaseButton;
   private readonly increaseButtonElement = DomService.increaseButton;
+  private readonly clearStatisticsBtnElement = DomService.clearStatisticsBtn;
 
   constructor(private modal = new Modal()) {
     this.boardSize = this.getSizeFromLocalStorage();
     this.initInputField();
     this.initResetButton();
+    this.initClearStatisticsButton();
     this.fillBoardTemplate();
     this.updateStatisticsDisplay(this.getGameStatistics());
     this.reset();
@@ -54,7 +56,7 @@ export class Game {
   /** Сбрасывает текущего игрока и обнуляет игровую доску */
   public reset(): void {
     this.currentPlayer = CellStatus.X;
-    this.boardStatus = Array.from({ length: this.boardSize }, () =>
+    this.board = Array.from({ length: this.boardSize }, () =>
       Array.from({ length: this.boardSize }, () => CellStatus.EMPTY),
     );
     if (this.boardElement) {
@@ -130,14 +132,14 @@ export class Game {
       console.error('{Ход выходит за пределы доски}');
       return false;
     }
-    if (this.boardStatus[row][column] !== CellStatus.EMPTY) {
+    if (this.board[row][column] !== CellStatus.EMPTY) {
       this.modal.showModal('Эта ячейка уже занята');
       return false;
     }
 
     target.textContent = this.currentPlayer;
     target.classList.add(this.currentPlayer);
-    this.boardStatus[row][column] = this.currentPlayer;
+    this.board[row][column] = this.currentPlayer;
     if (this.checkWinner()) {
       this.boardElement.removeEventListener('mousedown', this.cellClickHandler);
       this.saveGameResult(this.currentPlayer);
@@ -168,7 +170,7 @@ export class Game {
   }
 
   private checkDraw(): boolean {
-    return this.boardStatus.flat().every((cell) => cell !== CellStatus.EMPTY);
+    return this.board.flat().every((cell) => cell !== CellStatus.EMPTY);
   }
 
   private checkLine(line: CellStatus[]): boolean {
@@ -176,8 +178,8 @@ export class Game {
   }
 
   private checkHorizontal(): boolean {
-    for (let index = 0; index < this.boardSize; index++) {
-      if (this.checkLine(this.boardStatus[index])) {
+    for (let row = 0; row < this.boardSize; row++) {
+      if (this.checkLine(this.board[row])) {
         return true;
       }
     }
@@ -185,9 +187,9 @@ export class Game {
   }
 
   private checkVertical(): boolean {
-    for (let index = 0; index < this.boardSize; index++) {
-      const columns = this.boardStatus.map((row) => row[index]);
-      if (this.checkLine(columns)) {
+    for (let col = 0; col < this.boardSize; col++) {
+      const cells = this.board.map((row) => row[col]);
+      if (this.checkLine(cells)) {
         return true;
       }
     }
@@ -197,7 +199,7 @@ export class Game {
   private checkMainDiagonal(): boolean {
     const mainDiagonal: CellStatus[] = [];
     for (let index = 0; index < this.boardSize; index++) {
-      mainDiagonal.push(this.boardStatus[index][index]);
+      mainDiagonal.push(this.board[index][index]);
     }
     return this.checkLine(mainDiagonal);
   }
@@ -205,7 +207,7 @@ export class Game {
   private checkSecondDiagonal(): boolean {
     const secondDiagonal: CellStatus[] = [];
     for (let index = 0; index < this.boardSize; index++) {
-      secondDiagonal.push(this.boardStatus[index][this.boardSize - index - 1]);
+      secondDiagonal.push(this.board[index][this.boardSize - index - 1]);
     }
     return this.checkLine(secondDiagonal);
   }
@@ -272,5 +274,16 @@ export class Game {
         })
         .join('<br>');
     }
+  }
+
+  private initClearStatisticsButton(): void {
+    this.clearStatisticsBtnElement.addEventListener('click', () =>
+      this.clearStatistics(),
+    );
+  }
+
+  private clearStatistics(): void {
+    localStorage.removeItem('gameStatistics');
+    this.updateStatisticsDisplay([]);
   }
 }

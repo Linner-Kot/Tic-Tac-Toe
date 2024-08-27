@@ -1,3 +1,7 @@
+:root {
+  scrollbar-gutter: stable;
+}
+
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -260,7 +264,7 @@ body {
   font-size: 36px;
   margin: 0;
   line-height: 1.2;
-  margin-bottom: 10px;
+  margin-right: 20px;
   letter-spacing: 0.4px;
   color: #fccc9c;
   background-image: linear-gradient(98deg, #fff6ed 20%, #fbb26a 80%);
@@ -279,5 +283,37 @@ body {
 
   & div:not(:last-child) {
     border-bottom: 1px solid rgba(251, 178, 106, 0.3);
+  }
+}
+
+.statistics-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.clear-statistics-button {
+  display: inline-block;
+  padding: 8px 20px;
+  text-align: center;
+  text-decoration: none;
+  color: #412102;
+  background-color: #fbb26a;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 2px 20px #fbb26a40;
+  transition: background-color 0.2s ease;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 20px;
+
+  &:hover {
+    background-color: #fccc9c;
+  }
+
+  &:active {
+    background-color: #fbb26a;
   }
 }
