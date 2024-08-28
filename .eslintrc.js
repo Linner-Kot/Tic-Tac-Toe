@@ -45,6 +45,9 @@ module.exports = {
     'prettier/prettier': 'error', // need for eslint-plugin-prettier
     'arrow-body-style': 'off', // need for eslint-plugin-prettier
     'prefer-arrow-callback': 'off', // need for eslint-plugin-prettier
+    'unicorn/no-null': 'off',
+    'unicorn/no-array-for-each': 'off',
+    'unicorn/prevent-abbreviations': 'off',
   },
 };
 // npx eslint-config-prettier ./src/*.js

@@ -1,2 +1,6 @@
-const HELLO_WORLD = 'Hello World!';
-console.info(HELLO_WORLD);
+import { Game } from './game';
+import './style.css';
+
+document.addEventListener('DOMContentLoaded', () => {
+  new Game();
+});
