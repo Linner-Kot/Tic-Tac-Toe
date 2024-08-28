@@ -20,7 +20,6 @@ export class Game {
     this.initInputField();
     this.initResetButton();
     this.initClearStatisticsButton();
-    this.fillBoardTemplate();
     this.updateStatisticsDisplay(this.getGameStatistics());
     this.reset();
   }
@@ -67,6 +66,8 @@ export class Game {
     }
     this.boardElement.removeEventListener('mousedown', this.cellClickHandler);
     this.boardElement.addEventListener('mousedown', this.cellClickHandler);
+
+    this.fillBoardTemplate();
   }
 
   /** Заполняет контейнер доски ячейками */
@@ -75,6 +76,10 @@ export class Game {
       this.boardElement.innerHTML = '';
       this.boardElement.style.gridTemplateRows = `repeat(${this.boardSize}, 1fr)`;
       this.boardElement.style.gridTemplateColumns = `repeat(${this.boardSize}, 1fr)`;
+      this.boardElement.style.setProperty(
+        '--grid-size',
+        this.boardSize.toString(),
+      );
       const fragment = document.createDocumentFragment();
       for (let row = 0; row < this.boardSize; row++) {
         for (let col = 0; col < this.boardSize; col++) {
@@ -117,7 +122,6 @@ export class Game {
     ) {
       this.boardSize = parsedSize;
       localStorage.setItem('boardSize', this.boardSize.toString());
-      this.fillBoardTemplate();
       this.reset();
     }
   }
@@ -161,12 +165,17 @@ export class Game {
   }
 
   private checkWinner(): boolean {
-    return (
+    const winningLine =
       this.checkHorizontal() ||
       this.checkVertical() ||
       this.checkMainDiagonal() ||
-      this.checkSecondDiagonal()
-    );
+      this.checkSecondDiagonal();
+
+    if (winningLine) {
+      this.highlightWinningCells(winningLine);
+      return true;
+    }
+    return false;
   }
 
   private checkDraw(): boolean {
@@ -177,39 +186,43 @@ export class Game {
     return line.every((cell) => cell !== CellStatus.EMPTY && cell === line[0]);
   }
 
-  private checkHorizontal(): boolean {
+  private checkHorizontal(): [number, number][] | null {
     for (let row = 0; row < this.boardSize; row++) {
       if (this.checkLine(this.board[row])) {
-        return true;
+        return this.board[row].map((_, col) => [row, col]);
       }
     }
-    return false;
+    return null;
   }
 
-  private checkVertical(): boolean {
+  private checkVertical(): [number, number][] | null {
     for (let col = 0; col < this.boardSize; col++) {
       const cells = this.board.map((row) => row[col]);
       if (this.checkLine(cells)) {
-        return true;
+        return cells.map((_, row) => [row, col]);
       }
     }
-    return false;
+    return null;
   }
 
-  private checkMainDiagonal(): boolean {
+  private checkMainDiagonal(): [number, number][] | null {
     const mainDiagonal: CellStatus[] = [];
     for (let index = 0; index < this.boardSize; index++) {
       mainDiagonal.push(this.board[index][index]);
     }
-    return this.checkLine(mainDiagonal);
+    return this.checkLine(mainDiagonal)
+      ? mainDiagonal.map((_, index) => [index, index])
+      : null;
   }
 
-  private checkSecondDiagonal(): boolean {
+  private checkSecondDiagonal(): [number, number][] | null {
     const secondDiagonal: CellStatus[] = [];
     for (let index = 0; index < this.boardSize; index++) {
       secondDiagonal.push(this.board[index][this.boardSize - index - 1]);
     }
-    return this.checkLine(secondDiagonal);
+    return this.checkLine(secondDiagonal)
+      ? secondDiagonal.map((_, index) => [index, this.boardSize - index - 1])
+      : null;
   }
 
   private togglePlayer(): void {
@@ -285,5 +298,17 @@ export class Game {
   private clearStatistics(): void {
     localStorage.removeItem('gameStatistics');
     this.updateStatisticsDisplay([]);
+  }
+
+  private highlightWinningCells(cells: [number, number][]): void {
+    const winClass = `win-cell-${this.currentPlayer}`;
+    cells.forEach(([row, col]) => {
+      const cell = document.querySelector(
+        `.cell[data-x="${row}"][data-y="${col}"]`,
+      );
+      if (cell) {
+        cell.classList.add(winClass);
+      }
+    });
   }
 }

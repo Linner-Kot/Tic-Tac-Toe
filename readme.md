@@ -2,7 +2,7 @@
 
 # Описание
 
-Этот проект представляет собой классическую игру "Крестики-нолики", реализованную с использованием TypeScript и SCSS. Игра позволяет соревноваться друг с другом на одном устройстве.
+Этот проект представляет собой классическую игру "Крестики-нолики", реализованную с использованием TypeScript и CSS. Игра позволяет соревноваться друг с другом на одном устройстве. Также реализована консольная версия игры с использованием Node.js.
 
 ![game](https://github.com/user-attachments/assets/704be9a8-64f5-46e2-a437-c7f5ce07c71f)
 
@@ -110,7 +110,8 @@ ts-node src/game-node.ts
 ![Webpack](https://img.shields.io/badge/webpack-%238DD6F9.svg?style=for-the-badge&logo=webpack&logoColor=black)
 ![ESLint](https://img.shields.io/badge/ESLint-4B3263?style=for-the-badge&logo=eslint&logoColor=white)
 ![Visual Studio Code](https://img.shields.io/badge/Visual%20Studio%20Code-0078d7.svg?style=for-the-badge&logo=visual-studio-code&logoColor=white)
+![Node.js](https://img.shields.io/badge/node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
 
 # Лицензия
 
-![GitHub](https://img.shields.io/github/license/Linner_Kot/Tic-Tac-Toe)
+![GitHub](https://img.shields.io/github/license/Linner-Kot/Tic-Tac-Toe)

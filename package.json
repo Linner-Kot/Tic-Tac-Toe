@@ -2,7 +2,7 @@
   "name": "tic-tac-toe",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "./src/index.ts",
   "scripts": {
     "prettier": "prettier --write ./src**/*.ts",
     "prettier-check": "prettier --check ./src**/*.ts",
@@ -12,7 +12,7 @@
     "build-dev-watch": "webpack --mode development --node-env=development --watch",
     "start": "webpack serve --mode development --node-env=development --no-open",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "analyze": "webpack --mode production --node-env=production --env.analyze"
+    "analyze": "ANALYZE=true npm run build-dev"
   },
   "keywords": [],
   "author": "Kirill Amerkhanov",
@@ -40,6 +40,7 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.5.4",
     "webpack": "^5.93.0",
+    "webpack-bundle-analyzer": "^4.10.2",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.0.4"
   }

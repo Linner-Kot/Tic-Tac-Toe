@@ -72,7 +72,7 @@ body {
   text-align: center;
   line-height: 1;
   text-transform: uppercase;
-  font-size: 10em;
+  font-size: calc(25vw / var(--grid-size));
 }
 
 .cell.X {
@@ -315,5 +315,33 @@ body {
 
   &:active {
     background-color: #fbb26a;
+  }
+}
+
+.cell.win-cell-X {
+  text-shadow: 0 0 10px #fccc9c, 0 0 20px #fccc9c;
+  animation: text-glow-X 1s infinite alternate;
+}
+
+.cell.win-cell-O {
+  text-shadow: 0 0 10px #fbb26a, 0 0 20px #fbb26a;
+  animation: text-glow-O 1s infinite alternate;
+}
+
+@keyframes text-glow-X {
+  0% {
+    text-shadow: 0 0 5px #fccc9c, 0 0 10px #fccc9c;
+  }
+  100% {
+    text-shadow: 0 0 10px #fccc9c, 0 0 20px #fccc9c;
+  }
+}
+
+@keyframes text-glow-O {
+  0% {
+    text-shadow: 0 0 5px #fbb26a, 0 0 10px #fbb26a;
+  }
+  100% {
+    text-shadow: 0 0 10px #fbb26a, 0 0 20px #fbb26a;
   }
 }

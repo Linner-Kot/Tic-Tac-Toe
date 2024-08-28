@@ -2,11 +2,13 @@ const path = require('node:path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
+const BundleAnalyzerPlugin =
+  require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 const isProduction = process.env.NODE_ENV === 'production';
 const styleLoader = isProduction ? MiniCssExtractPlugin.loader : 'style-loader';
 
-module.exports = {
+const config = {
   entry: path.resolve(__dirname, 'src', 'index.ts'),
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -29,7 +31,7 @@ module.exports = {
     historyApiFallback: true,
     onListening: function (devServer) {
       if (isProduction) {
-        throw new Error("webpack-dev-server is not allowed in production mode");
+        throw new Error('webpack-dev-server is not allowed in production mode');
       }
       const port = devServer.server.address().port;
       console.log(`Listening on port ${port}`);
@@ -71,9 +73,27 @@ module.exports = {
       template: path.resolve(__dirname, 'src', 'index.html'),
       filename: 'index.html',
     }),
-    new MiniCssExtractPlugin(),
     new ESLintPlugin({
       extensions: ['js', 'ts', 'tsx'],
     }),
   ],
+};
+
+module.exports = () => {
+  if (isProduction) {
+    config.mode = 'production';
+    config.plugins.push(new MiniCssExtractPlugin());
+  } else {
+    config.mode = 'development';
+  }
+
+  if (process.env.ANALYZE) {
+    config.plugins.push(
+      new BundleAnalyzerPlugin({
+        defaultSizes: 'gzip',
+        analyzerPort: 3001,
+      }),
+    );
+  }
+  return config;
 };
